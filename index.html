@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Another #*@ $%&£ Word Cloud</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #FFEA00;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #cloud {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      justify-content: center;
+      align-items: center;
+      gap: 6px 10px;
+      padding: 12px;
+    }
+
+    .word {
+      display: inline-block;
+      line-height: 1;
+      cursor: default;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      white-space: nowrap;
+      opacity: 1;
+      font-style: italic;
+    }
+
+    .word:hover {
+      opacity: 1 !important;
+      transform: scale(1.12);
+    }
+
+    .s10 {
+      font-size: clamp(22px, 9vw, 66px);
+      font-weight: 900;
+    }
+
+    .s9 {
+      font-size: clamp(18px, 6.5vw, 42px);
+      font-weight: 900;
+    }
+
+    .s8 {
+      font-size: clamp(16px, 5vw, 28px);
+      font-weight: 700;
+    }
+
+    .s7 {
+      font-size: clamp(14px, 4vw, 16px);
+      font-weight: 700;
+    }
+
+    .s6 {
+      font-size: clamp(12px, 3vw, 16px);
+      font-weight: 700;
+    }
+
+    .s5 {
+      font-size: clamp(11px, 2.4vw, 14px);
+      font-weight: 400;
+    }
+
+    .s4 {
+      font-size: clamp(10px, 2vw, 13px);
+      font-weight: 400;
+    }
+
+    .s3 {
+      font-size: clamp(9px, 1.7vw, 12px);
+      font-weight: 400;
+    }
+
+    .s2 {
+      font-size: clamp(8px, 1.4vw, 11px);
+      font-weight: 400;
+    }
+
+    .s1 {
+      font-size: clamp(7px, 1.2vw, 10px);
+      font-weight: 400;
+    }
+
+    /* ── Header ── */
+    .header-stack {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .title {
+      padding: 12px;
+      border-radius: 50px;
+      background-color: #111;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .intro {
+      padding: 25px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 2px solid #111;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #111;
+    }
+
+    /* ── Legend / category filter ── */
+    #legend {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .legend-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border: 2px solid #111;
+      background: rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #111;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+    }
+
+    .legend-btn .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-btn.active {
+      background: #111;
+      color: #FFEA00;
+    }
+
+    .legend-btn.active .swatch {
+      border: 2px solid #FFEA00;
+    }
+
+    /* ── Orbit sliders ── */
+    #orbitSliderContainer,
+    #spreadSliderContainer,
+    #vspreadSliderContainer {
+      position: fixed;
+      left: 24px;
+      z-index: 11;
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid #111;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 320px;
+      box-sizing: border-box;
+    }
+
+    #orbitSliderContainer input[type="range"],
+    #spreadSliderContainer input[type="range"],
+    #vspreadSliderContainer input[type="range"] {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #spreadSliderContainer {
+      bottom: 24px;
+    }
+
+    #vspreadSliderContainer {
+      bottom: 72px;
+    }
+
+    #orbitSliderContainer {
+      bottom: 120px;
+    }
+
+    label[for="orbitSlider"],
+    label[for="spreadSlider"],
+    label[for="vspreadSlider"] {
+      font-size: 11px;
+      font-weight: 500;
+      color: #111;
+      text-transform: uppercase;
+    }
+
+    #orbitSlider,
+    #spreadSlider,
+    #vspreadSlider {
+      accent-color: #111;
+    }
+
+    /* ── Bottom controls ── */
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      padding: 14px 28px;
+      border: 2px solid #111;
+      position: fixed;
+      bottom: 168px;
+      left: 24px;
+      z-index: 10;
+      background: #111;
+      width: 320px;
+      box-sizing: border-box;
+    }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #FFEA00;
+      user-select: none;
+      text-transform: uppercase;
+    }
+
+    .switch {
+      position: relative;
+      width: 45px;
+      height: 25px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #FFEA00;
+      border: 2px solid #FFEA00;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 29px;
+      height: 29px;
+      left: -2px;
+      top: -4px;
+      background: #111;
+      border: #FFEA00 solid 2px;
+      border-radius: 50%;
+      transition: transform 0.25s;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
+    }
+
+    .switch input:checked+.slider {
+      background: #111;
+    }
+
+    .switch input:checked+.slider::before {
+      transform: translateX(20px);
+    }
+
+    body.inverted {
+      filter: invert(1);
+    }
+    /* Remove blue link styles from data sources links */
+    a.links {
+      color: inherit;
+      font-style: italic;
+      text-decoration: underline;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    a.links:hover {
+      color: #DC143C;
+      text-decoration: underline;
+    }
+    .dataTitle {
+      font-weight: 700;
+      /*display: block;
+      margin-bottom: 6px;*/
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="header-stack">
+    <div class="title">
+      Another #*@ $%&£<br>word cloud
+    </div>
+    <div class="intro">
+      <p>
+        <strong><em>Another #*@ $%&£ Word Cloud</em></strong> is a visualization of the most commonly used
+        curse and discriminatory words in British TV and radio, based on Ofcom research.
+        <br><br>
+        Words are sized by <strong>offensiveness</strong> — bigger = more offensive.
+        Colour shows category:
+        <span style="color:#DC143C;font-weight:700;">■ Pre-Watershed</span>,
+        <span style="color:#228B22;font-weight:700;">■ Post-Watershed</span>,
+        <span style="color:#0057A8;font-weight:700;">■ Discriminatory</span>.
+        <br><br>
+        Severity scale 1–5: Level 1 = most acceptable; Level 5 = least acceptable.
+        <br><br><br><br>
+        <div class="dataTitle">Data sources:</div>
+          <a class="links"
+          href="https://www.ofcom.org.uk/siteassets/resources/documents/research-and-data/tv-radio-and-on-demand-research/tv-research/offensive-lang.pdf?v=330518">Audience
+          attitudes towards
+          offensive language on television and
+          radio (2010)</a> 
+           & 
+          <a class="links"
+          href="https://www.iheartbritain.com/the-hierarchy-of-british-profanity-in-5-levels/">Audience
+          The Hierarchy of British Profanity in 5 Levels (2020)</a> 
+      </p>
+    </div>
+  </div>
+
+  <!-- Category legend / filter -->
+  <div id="legend">
+    <button class="legend-btn active" data-cat="all">
+      <span class="swatch" style="background:#111;"></span>
+      All categories
+    </button>
+    <button class="legend-btn" data-cat="pre">
+      <span class="swatch" style="background:#DC143C;"></span>
+      Pre-Watershed
+    </button>
+    <button class="legend-btn" data-cat="post">
+      <span class="swatch" style="background:#228B22;"></span>
+      Post-Watershed
+    </button>
+    <button class="legend-btn" data-cat="disc">
+      <span class="swatch" style="background:#0057A8;"></span>
+      Discriminatory
+    </button>
+  </div>
+
+  <!-- Cloud -->
+  <div id="cloud"></div>
+
+  <!-- Censor / Invert toggles -->
+  <div id="controls">
+    <div class="toggle-group">
+      <span class="toggle-label">Censor</span>
+      <label class="switch">
+        <input type="checkbox" id="toggleEffect" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="toggle-group">
+      <span class="toggle-label">Invert</span>
+      <label class="switch">
+        <input type="checkbox" id="toggleColors">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Orbit speed -->
+  <div id="orbitSliderContainer">
+    <label for="orbitSlider">Orbit Speed</label>
+    <input type="range" id="orbitSlider" min="0" max="100" value="50">
+    <span id="orbitSpeedValue" style="font-size:11px;color:#111;min-width:32px;display:inline-block;">1x</span>
+  </div>
+
+  <!-- Vertical spread -->
+  <div id="vspreadSliderContainer">
+    <label for="vspreadSlider">Vert Spread</label>
+    <input type="range" id="vspreadSlider" min="0" max="100" value="0">
+    <span id="vspreadValue" style="font-size:11px;color:#111;min-width:36px;display:inline-block;">1.00x</span>
+  </div>
+
+  <!-- Horiz spread -->
+  <div id="spreadSliderContainer">
+    <label for="spreadSlider">Horiz Spread</label>
+    <input type="range" id="spreadSlider" min="0" max="100" value="0">
+    <span id="spreadValue" style="font-size:11px;color:#111;min-width:36px;display:inline-block;">1.45x</span>
+  </div>
+
+  <script src="data.js" async defer></script>
+</body>
+
+</html>
